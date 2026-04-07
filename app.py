@@ -32,7 +32,16 @@ def _get_cookie_file():
 
 def _base_ydl_opts():
     opts = {
-        'extractor_args': {'youtube': {'player_client': ['tv_embedded', 'ios']}},
+        # 'android' is the most reliable client for server-side downloads.
+        # 'tv_embedded' was removed (unsupported since 2024) and 'ios' was
+        # unreliable. 'mweb' is kept as fallback.
+        'extractor_args': {'youtube': {'player_client': ['android', 'mweb']}},
+        'http_headers': {
+            'User-Agent': (
+                'com.google.android.youtube/19.09.37 '
+                '(Linux; U; Android 11) gzip'
+            ),
+        },
         'socket_timeout': 30,
         'retries': 5,
         'sleep_interval': 2,
