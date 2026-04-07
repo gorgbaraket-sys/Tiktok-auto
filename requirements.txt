@@ -1,0 +1,5 @@
+flask>=3.0.0
+groq>=0.9.0
+yt-dlp>=2024.12.23
+gunicorn>=21.2.0
+curl-cffi>=0.7.0
