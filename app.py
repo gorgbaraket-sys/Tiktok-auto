@@ -33,12 +33,12 @@ def _get_cookie_file():
 
 def _base_ydl_opts():
     opts = {
-        # 'android' bypasses bot-detection for video downloads.
-        # NOTE: do NOT set http_headers with an Android UA here — it would
-        # also apply to youtube:tab (channel listing) web-scraping requests
-        # and cause "unable to extract yt initial data" errors. yt-dlp sets
-        # the correct UA for each client internally.
+        # 'android' bypasses bot-detection for the video player API.
+        # 'impersonate' spoofs Chrome TLS fingerprint at the network level —
+        # this unblocks Railway server IPs flagged by YouTube bot-detection.
+        # Requires curl-cffi (added to requirements.txt).
         'extractor_args': {'youtube': {'player_client': ['android', 'mweb']}},
+        'impersonate': 'chrome',
         'socket_timeout': 30,
         'retries': 5,
         'sleep_interval': 2,
