@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import subprocess
 import threading
@@ -32,16 +33,12 @@ def _get_cookie_file():
 
 def _base_ydl_opts():
     opts = {
-        # 'android' is the most reliable client for server-side downloads.
-        # 'tv_embedded' was removed (unsupported since 2024) and 'ios' was
-        # unreliable. 'mweb' is kept as fallback.
+        # 'android' bypasses bot-detection for video downloads.
+        # NOTE: do NOT set http_headers with an Android UA here — it would
+        # also apply to youtube:tab (channel listing) web-scraping requests
+        # and cause "unable to extract yt initial data" errors. yt-dlp sets
+        # the correct UA for each client internally.
         'extractor_args': {'youtube': {'player_client': ['android', 'mweb']}},
-        'http_headers': {
-            'User-Agent': (
-                'com.google.android.youtube/19.09.37 '
-                '(Linux; U; Android 11) gzip'
-            ),
-        },
         'socket_timeout': 30,
         'retries': 5,
         'sleep_interval': 2,
@@ -451,7 +448,19 @@ HTML = r"""<!DOCTYPE html>
 
 # ────────────────────────────────────────────────────────────
 
+def _normalize_channel_url(url):
+    """Force channel URLs to the /videos tab. youtube:tab fails on bare
+    @handle pages (multi-tab layout); /videos is unambiguous and always works."""
+    if 'watch?v=' in url or 'youtu.be/' in url:
+        return url
+    url = url.rstrip('/')
+    if re.search(r'/(videos|shorts|streams|playlists|community)$', url, re.I):
+        return url
+    return url + '/videos'
+
+
 def get_channel_videos(channel_url, max_videos=10):
+    channel_url = _normalize_channel_url(channel_url)
     ydl_opts = {**_base_ydl_opts(), **{
         'quiet': True, 'extract_flat': True,
         'playlist_items': f'1-{max_videos}', 'ignoreerrors': True,
