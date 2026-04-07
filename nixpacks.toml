@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["python312", "python312Packages.pip", "ffmpeg", "dejavu_fonts", "freefont_ttf"]
-
-[phases.install]
-cmds = ["pip install --break-system-packages -r requirements.txt"]
-
-[start]
-cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 300"
